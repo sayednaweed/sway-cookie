@@ -30,12 +30,12 @@ class DynamicModelProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
-        $tokenableId = $identifier['tokenableId'];
+        $tokenable_id = $identifier['tokenable_id'];
         $type = $identifier['type'];
         $passedType = "App\Models\\{$type}";
         if (strcasecmp($this->modelClass, $passedType) === 0) {
             // Same model token
-            return $this->modelClass::find($tokenableId);
+            return $this->modelClass::find($tokenable_id);
         } else {
             return null;
         }

@@ -66,16 +66,16 @@ class ApiGuard implements Guard
             return ['user' => null, 'message' => 'Token Expired', 'status' => 403];
         }
         // 3. Check token in Redis
-        $tokenableId = $payload->getTokenableId();
+        $tokenable_id = $payload->getTokenableId();
         $type = $payload->getType();
-        $key = StringUtils::getRedisKey($type, $tokenableId);
+        $key = StringUtils::getRedisKey($type, $tokenable_id);
         $result = $this->redisService->getToken($key, $accessToken);
         if ($result) {
             // 1. Token Found
             // If provider is is user and you pass ngo token you can access user if they have same id
             // So this must be imposed
             $constraints = [
-                "tokenableId" => $tokenableId,
+                "tokenable_id" => $tokenable_id,
                 "type" => $type,
             ];
             $authUser = $this->provider->retrieveById($constraints);
@@ -85,7 +85,7 @@ class ApiGuard implements Guard
         } else {
             // 3. If access_token not exist in Redis check database
             $tokenRecord = DB::table('refresh_tokens as rt')->where('rt.access_token', $accessToken)
-                ->select('rt.tokenableId')
+                ->select('rt.tokenable_id')
                 ->first();
             if (!$tokenRecord) {
                 return ['user' => null, 'tokenExpired' => false, 'status' => 404];
@@ -93,7 +93,7 @@ class ApiGuard implements Guard
             // If provider is is user and you pass ngo token you can access user if they have same id
             // So this must be imposed
             $constraints = [
-                "tokenableId" => $tokenRecord->tokenable_id,
+                "tokenable_id" => $tokenRecord->tokenable_id,
                 "type" => $type,
             ];
             // Use the provider linked to the guard to resolve the correct model
