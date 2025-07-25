@@ -110,8 +110,6 @@ class JWTTokenService
         $this->redisService->deleteToken($key);
         // 2. Remove from database
         $deletedCount = DB::table('refresh_tokens')
-            ->where('tokenable_id', $user->id)
-            ->where('tokenable_type', $payload->getType())
             ->where('access_token', $token)
             ->delete();
 
