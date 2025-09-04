@@ -54,11 +54,13 @@ class JWTTokenService
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $accessTokenExpiresAt,
+            'role_id' => $user->role_id
         ];
         $refreshPayload = [
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $refreshTokenExpiresAt,
+            'role_id' => $user->role_id
         ];
         $accessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
         $refreshToken = JWT::encode($refreshPayload, self::$secretKey, "HS256");
@@ -148,6 +150,7 @@ class JWTTokenService
         if ($tokenRecord) {
             $tokenableId = $payload->getTokenableId();
             $type = $payload->getType();
+            $role_id = $payload->getRoleId();
             $key = StringUtils::getRedisKey($type, $tokenableId);
 
             // 3. Check If refresh token is expired
@@ -170,6 +173,7 @@ class JWTTokenService
                 'tokenable_id' =>  $tokenableId,
                 'type' =>  $type,
                 'expires_at' => $accessTokenExpiresAt,
+                'role_id' => $role_id
             ];
             $newAccessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
             $tokenRecord->access_token_expires_at = $accessTokenExpiresAt;
@@ -210,7 +214,8 @@ class JWTTokenService
         $payload = new Payload(
             $decodedPayload->tokenable_id,
             $decodedPayload->type,
-            $decodedPayload->expires_at
+            $decodedPayload->expires_at,
+            $decodedPayload->role_id,
         );
 
         return $payload;
