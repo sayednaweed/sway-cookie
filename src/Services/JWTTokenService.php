@@ -37,7 +37,7 @@ class JWTTokenService
      * @param string $model
      * @return string
      */
-    public function generateToken(Authenticatable $user, $model)
+    public function generateToken(Authenticatable $user, $model, $include_field)
     {
         $ipAddress = request()->ip();
         $agent = new Agent();
@@ -54,13 +54,17 @@ class JWTTokenService
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $accessTokenExpiresAt,
-            'role_id' => $user->role_id
+            'role_id' => $user->role_id,
+            'include_key' => $include_field,
+            'include_value' => $user[$include_field]
         ];
         $refreshPayload = [
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $refreshTokenExpiresAt,
-            'role_id' => $user->role_id
+            'role_id' => $user->role_id,
+            'include_key' => $include_field,
+            'include_value' => $user[$include_field]
         ];
         $accessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
         $refreshToken = JWT::encode($refreshPayload, self::$secretKey, "HS256");
@@ -173,7 +177,8 @@ class JWTTokenService
                 'tokenable_id' =>  $tokenableId,
                 'type' =>  $type,
                 'expires_at' => $accessTokenExpiresAt,
-                'role_id' => $role_id
+                'role_id' => $role_id,
+                $payload->getIncludeKey() => $payload[$payload->getIncludeKey()]
             ];
             $newAccessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
             $tokenRecord->access_token_expires_at = $accessTokenExpiresAt;
@@ -216,6 +221,8 @@ class JWTTokenService
             $decodedPayload->type,
             $decodedPayload->expires_at,
             $decodedPayload->role_id,
+            $decodedPayload->include_key,
+            $decodedPayload->include_value,
         );
 
         return $payload;

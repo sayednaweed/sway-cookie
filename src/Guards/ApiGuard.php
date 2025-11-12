@@ -177,7 +177,9 @@ class ApiGuard implements Guard
         if ($user && Hash::check($credentials['password'], $user->password)) {
             // 1. Check device
             // Generate and store the access and refresh tokens
-            $result = $this->generateTokens($user);
+            $include_field = $credentials['include_user_field'];
+
+            $result = $this->generateTokens($user, $include_field);
             return [
                 "user" => $user,
                 "access_token" => $result['access_token'],
@@ -190,8 +192,8 @@ class ApiGuard implements Guard
     /**
      * Generate access and refresh tokens and store them.
      */
-    private function generateTokens(Authenticatable $user)
+    private function generateTokens(Authenticatable $user, $include_field)
     {
-        return $this->tokenService->generateToken($user, $this->provider->getModel());
+        return $this->tokenService->generateToken($user, $this->provider->getModel(), $include_field);
     }
 }
