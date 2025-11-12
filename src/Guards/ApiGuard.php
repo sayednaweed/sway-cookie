@@ -177,7 +177,10 @@ class ApiGuard implements Guard
         if ($user && Hash::check($credentials['password'], $user->password)) {
             // 1. Check device
             // Generate and store the access and refresh tokens
-            $include_field = $credentials['include_user_field'];
+            $include_field = null;
+            if (array_key_exists('include_user_field', $credentials)) {
+                $include_field = $credentials['include_user_field'];
+            }
 
             $result = $this->generateTokens($user, $include_field);
             return [

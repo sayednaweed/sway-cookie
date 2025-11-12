@@ -49,22 +49,25 @@ class JWTTokenService
         $accessTokenExpiresAt = now()->addMinutes(self::$accessTokenExpiration); // Access token expires in 1 hour
         $refreshTokenExpiresAt = now()->addDays(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
         // $refreshTokenExpiresAt = now()->addDays(self::$refreshTokenExpiration); // Refresh token expires in 2 weeks
-
+        // Safe extraction of the include value
+        $includeValue = $include_field && isset($user->{$include_field})
+            ? $user->{$include_field}
+            : null;
         $accessPayload = [
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $accessTokenExpiresAt,
             'role_id' => $user->role_id,
-            'include_key' => $include_field,
-            'include_value' => $user[$include_field]
+            'include_key'  => $include_field,
+            'include_value' => $includeValue,
         ];
         $refreshPayload = [
             'tokenable_id' =>  $user->id,
             'type' =>  $modelName,
             'expires_at' => $refreshTokenExpiresAt,
             'role_id' => $user->role_id,
-            'include_key' => $include_field,
-            'include_value' => $user[$include_field]
+            'include_key'  => $include_field,
+            'include_value' => $includeValue,
         ];
         $accessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
         $refreshToken = JWT::encode($refreshPayload, self::$secretKey, "HS256");
@@ -178,7 +181,8 @@ class JWTTokenService
                 'type' =>  $type,
                 'expires_at' => $accessTokenExpiresAt,
                 'role_id' => $role_id,
-                $payload->getIncludeKey() => $payload[$payload->getIncludeKey()]
+                'include_key'  => $payload->getIncludeKey(),
+                'include_value' => $payload->getIncludeValue(),
             ];
             $newAccessToken = JWT::encode($accessPayload, self::$secretKey, "HS256");
             $tokenRecord->access_token_expires_at = $accessTokenExpiresAt;
@@ -221,8 +225,8 @@ class JWTTokenService
             $decodedPayload->type,
             $decodedPayload->expires_at,
             $decodedPayload->role_id,
-            $decodedPayload->include_key,
-            $decodedPayload->include_value,
+            $decodedPayload->include_key ?? null,
+            $decodedPayload->include_value ?? null,
         );
 
         return $payload;
