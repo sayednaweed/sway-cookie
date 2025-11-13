@@ -27,7 +27,7 @@ class AuthenticateSwayMiddleware
             });
         } else {
             // You can redirect to a custom login route or return an error message for API users
-            return response()->json(['message' => $result['message']]);
+            return response()->json(['message' => $result['message']], $result['status']);
         }
 
         return $next($request);
